@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' fill='%237c6bff'>✦</text></svg>"/>
+  <title>Edit Task — TaskFlow Pro</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#0a0a0f;--surface:#111118;--card:#16161f;--border:#ffffff0f;--border2:#ffffff18;--accent:#7c6bff;--accent2:#5fffd4;--text:#eeeeff;--muted:#7070a0;--danger:#ff4d6d}
+    html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif}
+    body{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:1.5rem 1rem}
+    .container{width:100%;max-width:560px}
+    .back-link{display:inline-flex;align-items:center;gap:.5rem;color:var(--muted);font-size:.875rem;text-decoration:none;margin-bottom:1.25rem;transition:color .15s}
+    .back-link:hover{color:var(--accent)}
+    .card{background:var(--card);border:1px solid var(--border2);border-radius:24px;padding:clamp(1.5rem,5vw,2.5rem);box-shadow:0 20px 60px #00000066}
+    .card h1{font-family:'Syne',sans-serif;font-size:clamp(1.2rem,4vw,1.5rem);font-weight:800;margin-bottom:.2rem}
+    .card p{color:var(--muted);font-size:.875rem;margin-bottom:1.75rem}
+    .frow{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+    @media(max-width:480px){.frow{grid-template-columns:1fr}}
+    .fg{margin-bottom:1.1rem}
+    label{display:block;font-size:.75rem;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.45rem}
+    input,select,textarea{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.8rem 1rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:clamp(0.85rem,3vw,0.9rem);outline:none;transition:border-color .2s,box-shadow .2s;-webkit-appearance:none}
+    input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px #7c6bff18}
+    input::placeholder,textarea::placeholder{color:var(--muted)}
+    textarea{resize:vertical;min-height:90px}
+    .actions{display:flex;gap:.75rem;margin-top:.5rem;flex-wrap:wrap}
+    .btn-save{flex:1;min-width:120px;padding:.875rem;background:linear-gradient(135deg,var(--accent),#9d8fff);border:none;border-radius:12px;color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;cursor:pointer;box-shadow:0 4px 20px #7c6bff33;transition:all .15s;-webkit-tap-highlight-color:transparent}
+    .btn-save:hover{transform:translateY(-1px)}
+    .btn-back{padding:.875rem 1.25rem;background:none;border:1px solid var(--border2);border-radius:12px;color:var(--muted);font-size:.9rem;text-decoration:none;display:flex;align-items:center;transition:all .15s;white-space:nowrap}
+    .btn-back:hover{border-color:var(--border);color:var(--text)}
+    .danger{margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border)}
+    .danger h3{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:.75rem}
+    .btn-del{display:inline-flex;align-items:center;gap:.5rem;padding:.65rem 1rem;background:#ff4d6d12;border:1px solid #ff4d6d22;border-radius:10px;color:var(--danger);font-size:.875rem;cursor:pointer;transition:all .15s;text-decoration:none;-webkit-tap-highlight-color:transparent}
+    .btn-del:hover{background:#ff4d6d22;border-color:var(--danger)}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="{% url 'dashboard' %}" class="back-link">← Back to Dashboard</a>
+    <div class="card">
+      <h1>Edit Task</h1>
+      <p>Update the task details below</p>
+      <form method="POST">
+        {% csrf_token %}
+        <div class="fg">
+          <label>Task Title *</label>
+          <input type="text" name="title" value="{{ task.title }}" required/>
+        </div>
+        <div class="fg">
+          <label>Description</label>
+          <textarea name="description">{{ task.description }}</textarea>
+        </div>
+        <div class="frow">
+          <div class="fg">
+            <label>Priority</label>
+            <select name="priority">
+              <option value="low" {% if task.priority == 'low' %}selected{% endif %}>Low</option>
+              <option value="medium" {% if task.priority == 'medium' %}selected{% endif %}>Medium</option>
+              <option value="high" {% if task.priority == 'high' %}selected{% endif %}>High</option>
+              <option value="critical" {% if task.priority == 'critical' %}selected{% endif %}>Critical</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>Status</label>
+            <select name="status">
+              <option value="todo" {% if task.status == 'todo' %}selected{% endif %}>To Do</option>
+              <option value="in_progress" {% if task.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+              <option value="review" {% if task.status == 'review' %}selected{% endif %}>In Review</option>
+              <option value="done" {% if task.status == 'done' %}selected{% endif %}>Done</option>
+            </select>
+          </div>
+        </div>
+        <div class="frow">
+          <div class="fg">
+            <label>Category</label>
+            <select name="category">
+              <option value="">No Category</option>
+              {% for cat in categories %}
+              <option value="{{ cat.id }}" {% if task.category and task.category.id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="fg">
+            <label>Due Date</label>
+            <input type="date" name="due_date" value="{{ task.due_date|date:'Y-m-d' }}"/>
+          </div>
+        </div>
+        <div class="fg">
+          <label>Tags (comma-separated)</label>
+          <input type="text" name="tags" value="{{ task.tags }}" placeholder="django, backend, api"/>
+        </div>
+        <div class="actions">
+          <a href="{% url 'dashboard' %}" class="btn-back">Cancel</a>
+          <button type="submit" class="btn-save">Save Changes →</button>
+        </div>
+      </form>
+      <div class="danger">
+        <h3>Danger Zone</h3>
+        <a href="{% url 'delete_task' task.id %}" class="btn-del" onclick="return confirm('Delete this task permanently?')">
+          🗑 Delete this task
+        </a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' fill='%237c6bff'>✦</text></svg>"/>
+  <title>Dashboard — TaskFlow Pro</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #08080e; --surface: #0f0f18; --card: #13131e; --card2: #18182a;
+      --border: #ffffff0c; --border2: #ffffff18;
+      --accent: #7c6bff; --accent2: #5fffd4; --accent3: #ff6b9d;
+      --text: #eeeeff; --text2: #b0b0d0; --muted: #606080;
+      --danger: #ff4d6d; --warning: #ffb83f; --success: #00e5a0;
+      --low: #5fffd4; --medium: #ffb83f; --high: #ff7f50; --critical: #ff4d6d;
+      --status-todo: #7c6bff; --status-ip: #ffb83f; --status-review: #ff6b9d; --status-done: #00e5a0;
+    }
+    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; overflow-x: hidden; }
+
+    /* ─── SIDEBAR ─────────────────────────────────────────────────── */
+    .layout { display: flex; min-height: 100vh; }
+    .sidebar {
+      width: 260px; min-height: 100vh; background: var(--surface);
+      border-right: 1px solid var(--border); padding: 1.5rem;
+      position: sticky; top: 0; height: 100vh; overflow-y: auto;
+      display: flex; flex-direction: column; gap: 0; flex-shrink: 0;
+    }
+    .sidebar-brand { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 2rem; }
+    .brand-icon { width: 40px; height: 40px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; box-shadow: 0 0 20px #7c6bff33; flex-shrink: 0; }
+    .brand-text { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1rem; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .brand-sub { font-size: 0.65rem; color: var(--muted); display: block; }
+
+    .sidebar-section { margin-bottom: 2rem; }
+    .sidebar-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); font-weight: 600; margin-bottom: 0.75rem; }
+    .nav-item { display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0.8rem; border-radius: 10px; color: var(--text2); font-size: 0.88rem; cursor: pointer; transition: all 0.15s; text-decoration: none; margin-bottom: 0.2rem; }
+    .nav-item:hover { background: var(--card2); color: var(--text); }
+    .nav-item.active { background: #7c6bff18; color: var(--accent); border: 1px solid #7c6bff22; }
+    .nav-item .icon { width: 20px; text-align: center; font-size: 0.9rem; }
+    .nav-badge { margin-left: auto; font-size: 0.7rem; background: var(--accent); color: white; padding: 0.1rem 0.45rem; border-radius: 99px; font-weight: 600; }
+
+    .cat-item { display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0.8rem; border-radius: 8px; color: var(--text2); font-size: 0.85rem; cursor: pointer; transition: all 0.15s; text-decoration: none; margin-bottom: 0.15rem; }
+    .cat-item:hover { background: var(--card2); color: var(--text); }
+    .cat-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .cat-count { margin-left: auto; color: var(--muted); font-size: 0.75rem; }
+    .btn-add-cat { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.8rem; border-radius: 8px; border: 1px dashed var(--border2); color: var(--muted); font-size: 0.8rem; background: none; cursor: pointer; transition: all 0.15s; width: 100%; margin-top: 0.5rem; }
+    .btn-add-cat:hover { border-color: var(--accent); color: var(--accent); }
+
+    .sidebar-footer { margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--border); }
+    .user-card { display: flex; align-items: center; gap: 0.75rem; }
+    .user-avatar { width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg, var(--accent), var(--accent2)); display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.9rem; color: white; flex-shrink: 0; }
+    .user-info { flex: 1; min-width: 0; }
+    .user-name { font-size: 0.88rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .user-role { font-size: 0.7rem; color: var(--muted); }
+    .btn-logout { background: none; border: 1px solid var(--border2); color: var(--muted); padding: 0.3rem 0.6rem; border-radius: 7px; cursor: pointer; font-size: 0.75rem; transition: all 0.15s; white-space: nowrap; }
+    .btn-logout:hover { border-color: var(--danger); color: var(--danger); }
+
+    /* ─── MAIN ────────────────────────────────────────────────────── */
+    .main { flex: 1; padding: 2rem; min-width: 0; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+    .topbar-left h1 { font-family: 'Syne', sans-serif; font-size: 1.6rem; font-weight: 800; }
+    .topbar-left p { color: var(--muted); font-size: 0.875rem; }
+    .btn-new-task { display: flex; align-items: center; gap: 0.5rem; padding: 0.7rem 1.25rem; background: linear-gradient(135deg, var(--accent), #9d8fff); border: none; border-radius: 12px; color: white; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.9rem; cursor: pointer; box-shadow: 0 4px 20px #7c6bff44; transition: all 0.15s; text-decoration: none; }
+    .btn-new-task:hover { transform: translateY(-1px); box-shadow: 0 8px 30px #7c6bff66; }
+
+    /* ─── STATS ───────────────────────────────────────────────────── */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.25rem; position: relative; overflow: hidden; }
+    .stat-card::before { content: ''; position: absolute; top: -40px; right: -40px; width: 100px; height: 100px; border-radius: 50%; opacity: 0.08; }
+    .stat-card.s1::before { background: var(--accent); }
+    .stat-card.s2::before { background: var(--success); }
+    .stat-card.s3::before { background: var(--warning); }
+    .stat-card.s4::before { background: var(--danger); }
+    .stat-card.s5::before { background: var(--accent2); }
+    .stat-num { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; line-height: 1; }
+    .stat-label { font-size: 0.78rem; color: var(--muted); margin-top: 0.4rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .stat-icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
+    .progress-bar { margin-top: 0.75rem; height: 3px; background: var(--border2); border-radius: 99px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 99px; transition: width 0.8s ease; }
+
+    /* ─── FILTERS ─────────────────────────────────────────────────── */
+    .filters-bar { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .search-box { flex: 1; min-width: 200px; position: relative; }
+    .search-box input { width: 100%; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 0.65rem 1rem 0.65rem 2.5rem; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.875rem; outline: none; transition: border-color 0.2s; }
+    .search-box input:focus { border-color: var(--accent); }
+    .search-icon { position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 0.9rem; }
+    select { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 0.65rem 0.9rem; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.875rem; outline: none; cursor: pointer; }
+    select:focus { border-color: var(--accent); }
+    .btn-filter { padding: 0.65rem 1rem; background: var(--accent); border: none; border-radius: 10px; color: white; font-family: 'DM Sans', sans-serif; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+    .btn-filter:hover { background: #9d8fff; }
+    .btn-clear { padding: 0.65rem 1rem; background: none; border: 1px solid var(--border2); border-radius: 10px; color: var(--muted); font-size: 0.875rem; cursor: pointer; text-decoration: none; transition: all 0.15s; }
+    .btn-clear:hover { border-color: var(--danger); color: var(--danger); }
+
+    /* ─── TASK LIST ───────────────────────────────────────────────── */
+    .tasks-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+    .tasks-header h2 { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; }
+    .task-count { font-size: 0.8rem; color: var(--muted); background: var(--card2); padding: 0.2rem 0.6rem; border-radius: 99px; }
+    .tasks-list { display: flex; flex-direction: column; gap: 0.75rem; }
+
+    .task-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+      padding: 1.1rem 1.25rem; display: flex; align-items: flex-start; gap: 1rem;
+      transition: all 0.2s; position: relative; overflow: hidden;
+    }
+    .task-card:hover { border-color: var(--border2); transform: translateY(-1px); box-shadow: 0 8px 30px #00000040; }
+    .task-card.pinned { border-color: #ffb83f33; background: #ffb83f04; }
+    .task-card.pinned::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--warning); border-radius: 99px; }
+    .task-card.completed { opacity: 0.55; }
+    .task-card.overdue { border-color: #ff4d6d22; }
+    .task-card.overdue::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--danger); border-radius: 99px; }
+
+    .task-check { flex-shrink: 0; margin-top: 2px; }
+    .task-check a { display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 7px; border: 2px solid var(--border2); text-decoration: none; transition: all 0.15s; color: transparent; }
+    .task-check a:hover { border-color: var(--accent); background: #7c6bff18; }
+    .task-check a.checked { background: var(--success); border-color: var(--success); color: #0a0a0f; font-size: 0.75rem; }
+
+    .task-body { flex: 1; min-width: 0; }
+    .task-title { font-size: 0.95rem; font-weight: 500; margin-bottom: 0.3rem; }
+    .task-title.done { text-decoration: line-through; color: var(--muted); }
+    .task-desc { font-size: 0.8rem; color: var(--text2); margin-bottom: 0.6rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .task-meta { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+
+    .badge { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.2rem 0.55rem; border-radius: 99px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+    .badge-priority-low { background: #5fffd418; color: var(--low); }
+    .badge-priority-medium { background: #ffb83f18; color: var(--medium); }
+    .badge-priority-high { background: #ff7f5018; color: var(--high); }
+    .badge-priority-critical { background: #ff4d6d18; color: var(--critical); border: 1px solid #ff4d6d33; }
+    .badge-status-todo { background: #7c6bff15; color: var(--status-todo); }
+    .badge-status-in_progress { background: #ffb83f15; color: var(--status-ip); }
+    .badge-status-review { background: #ff6b9d15; color: var(--status-review); }
+    .badge-status-done { background: #00e5a015; color: var(--status-done); }
+
+    .badge-cat { padding: 0.2rem 0.55rem; border-radius: 99px; font-size: 0.7rem; font-weight: 500; }
+    .due-date { font-size: 0.72rem; color: var(--muted); display: flex; align-items: center; gap: 0.25rem; }
+    .due-date.overdue { color: var(--danger); }
+    .tag { background: var(--card2); border: 1px solid var(--border); border-radius: 6px; padding: 0.15rem 0.45rem; font-size: 0.68rem; color: var(--muted); }
+
+    .task-actions { display: flex; align-items: center; gap: 0.4rem; flex-shrink: 0; opacity: 0; transition: opacity 0.15s; }
+    .task-card:hover .task-actions { opacity: 1; }
+    .btn-icon { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 8px; border: 1px solid var(--border); background: none; color: var(--muted); cursor: pointer; font-size: 0.8rem; text-decoration: none; transition: all 0.15s; }
+    .btn-icon:hover { background: var(--card2); color: var(--text); border-color: var(--border2); }
+    .btn-icon.pin:hover { color: var(--warning); border-color: var(--warning); }
+    .btn-icon.edit:hover { color: var(--accent2); border-color: var(--accent2); }
+    .btn-icon.del:hover { color: var(--danger); border-color: var(--danger); }
+
+    .empty-state { text-align: center; padding: 4rem 2rem; color: var(--muted); }
+    .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+    .empty-state h3 { font-family: 'Syne', sans-serif; font-size: 1.1rem; color: var(--text2); margin-bottom: 0.5rem; }
+
+    /* ─── MODAL ───────────────────────────────────────────────────── */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: #000000cc; z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(6px); }
+    .modal-overlay.open { display: flex; }
+    .modal { background: var(--card); border: 1px solid var(--border2); border-radius: 24px; padding: 2rem; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; box-shadow: 0 30px 80px #00000088; animation: modalIn 0.25s ease; }
+    @keyframes modalIn { from { opacity: 0; transform: translateY(20px) scale(0.96); } to { opacity: 1; transform: none; } }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.75rem; }
+    .modal-header h2 { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 700; }
+    .modal-close { background: none; border: 1px solid var(--border2); border-radius: 8px; color: var(--muted); width: 32px; height: 32px; cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+    .modal-close:hover { border-color: var(--danger); color: var(--danger); }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-group { margin-bottom: 1.1rem; }
+    .form-label { display: block; font-size: 0.78rem; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+    .form-control { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1rem; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+    .form-control:focus { border-color: var(--accent); box-shadow: 0 0 0 3px #7c6bff18; }
+    .form-control::placeholder { color: var(--muted); }
+    textarea.form-control { resize: vertical; min-height: 80px; }
+    .modal-footer { display: flex; gap: 0.75rem; margin-top: 1.5rem; }
+    .btn-submit { flex: 1; padding: 0.8rem; background: linear-gradient(135deg, var(--accent), #9d8fff); border: none; border-radius: 12px; color: white; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: all 0.15s; box-shadow: 0 4px 20px #7c6bff33; }
+    .btn-submit:hover { transform: translateY(-1px); box-shadow: 0 8px 30px #7c6bff55; }
+    .btn-cancel { padding: 0.8rem 1.25rem; background: none; border: 1px solid var(--border2); border-radius: 12px; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; cursor: pointer; transition: all 0.15s; }
+    .btn-cancel:hover { border-color: var(--border); color: var(--text2); }
+
+    /* ─── MESSAGES ────────────────────────────────────────────────── */
+    .flash-messages { position: fixed; top: 1.5rem; right: 1.5rem; z-index: 2000; display: flex; flex-direction: column; gap: 0.5rem; }
+    .flash { padding: 0.75rem 1.25rem; border-radius: 12px; font-size: 0.875rem; animation: slideIn 0.3s ease, fadeOut 0.5s ease 3s forwards; max-width: 320px; }
+    .flash-success { background: #00e5a018; border: 1px solid #00e5a033; color: var(--success); }
+    .flash-error { background: #ff4d6d18; border: 1px solid #ff4d6d33; color: var(--danger); }
+    @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: none; } }
+    @keyframes fadeOut { to { opacity: 0; transform: translateX(20px); } }
+
+    /* ─── CAT MODAL ───────────────────────────────────────────────── */
+    .color-options { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .color-opt { width: 28px; height: 28px; border-radius: 8px; cursor: pointer; border: 2px solid transparent; transition: all 0.15s; }
+    .color-opt:hover, .color-opt.selected { border-color: white; transform: scale(1.1); }
+
+    /* ─── RESPONSIVE ──────────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      .sidebar { width: 100%; min-height: auto; position: relative; }
+      .layout { flex-direction: column; }
+      .form-row { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+{% if messages %}
+<div class="flash-messages">
+  {% for msg in messages %}
+  <div class="flash flash-{% if msg.tags == 'error' %}error{% else %}success{% endif %}">{{ msg }}</div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="layout">
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">✦</div>
+      <div>
+        <div class="brand-text">TaskFlow Pro</div>
+        <span class="brand-sub">by Agha Wafa Abbas</span>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Navigation</div>
+      <a href="{% url 'dashboard' %}" class="nav-item active">
+        <span class="icon">⊞</span> Dashboard
+        {% if stats.total %}<span class="nav-badge">{{ stats.total }}</span>{% endif %}
+      </a>
+      <a href="{% url 'dashboard' %}?status=in_progress" class="nav-item">
+        <span class="icon">◈</span> In Progress
+        {% if stats.in_progress %}<span class="nav-badge" style="background:#ffb83f">{{ stats.in_progress }}</span>{% endif %}
+      </a>
+      <a href="{% url 'dashboard' %}?status=done" class="nav-item">
+        <span class="icon">✓</span> Completed
+      </a>
+      {% if stats.overdue %}
+      <a href="{% url 'dashboard' %}?priority=critical" class="nav-item">
+        <span class="icon">⚠</span> Overdue
+        <span class="nav-badge" style="background:#ff4d6d">{{ stats.overdue }}</span>
+      </a>
+      {% endif %}
+      <a href="/admin/" class="nav-item" target="_blank">
+        <span class="icon">⚙</span> Admin Panel
+      </a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Categories</div>
+      {% for cat in categories %}
+      <a href="{% url 'dashboard' %}?category={{ cat.id }}" class="cat-item">
+        <span class="cat-dot" style="background:{{ cat.color }}"></span>
+        {{ cat.name }}
+        <span class="cat-count">{{ cat.tasks.count }}</span>
+      </a>
+      {% endfor %}
+      <button class="btn-add-cat" onclick="openCatModal()">+ Add Category</button>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar">{{ request.user.username|first|upper }}</div>
+        <div class="user-info">
+          <div class="user-name">{{ request.user.username }}</div>
+          <div class="user-role">{{ stats.completion_rate }}% complete</div>
+        </div>
+        <a href="{% url 'logout' %}" class="btn-logout">Out</a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── MAIN ── -->
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <h1>My Workspace</h1>
+        <p>{{ today|date:"l, F j, Y" }}</p>
+      </div>
+      <button class="btn-new-task" onclick="openModal()">+ New Task</button>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card s1">
+        <div class="stat-icon">📋</div>
+        <div class="stat-num">{{ stats.total }}</div>
+        <div class="stat-label">Total Tasks</div>
+      </div>
+      <div class="stat-card s2">
+        <div class="stat-icon">✅</div>
+        <div class="stat-num">{{ stats.completed }}</div>
+        <div class="stat-label">Completed</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:{{ stats.completion_rate }}%"></div></div>
+      </div>
+      <div class="stat-card s3">
+        <div class="stat-icon">⚡</div>
+        <div class="stat-num">{{ stats.in_progress }}</div>
+        <div class="stat-label">In Progress</div>
+      </div>
+      <div class="stat-card s4">
+        <div class="stat-icon">🔴</div>
+        <div class="stat-num">{{ stats.overdue }}</div>
+        <div class="stat-label">Overdue</div>
+      </div>
+      <div class="stat-card s5">
+        <div class="stat-icon">📊</div>
+        <div class="stat-num">{{ stats.completion_rate }}%</div>
+        <div class="stat-label">Completion Rate</div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <form method="GET" action="{% url 'dashboard' %}" class="filters-bar">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" name="q" placeholder="Search tasks..." value="{{ search_query }}"/>
+      </div>
+      <select name="status">
+        <option value="">All Status</option>
+        <option value="todo" {% if status_filter == 'todo' %}selected{% endif %}>To Do</option>
+        <option value="in_progress" {% if status_filter == 'in_progress' %}selected{% endif %}>In Progress</option>
+        <option value="review" {% if status_filter == 'review' %}selected{% endif %}>In Review</option>
+        <option value="done" {% if status_filter == 'done' %}selected{% endif %}>Done</option>
+      </select>
+      <select name="priority">
+        <option value="">All Priority</option>
+        <option value="critical" {% if priority_filter == 'critical' %}selected{% endif %}>Critical</option>
+        <option value="high" {% if priority_filter == 'high' %}selected{% endif %}>High</option>
+        <option value="medium" {% if priority_filter == 'medium' %}selected{% endif %}>Medium</option>
+        <option value="low" {% if priority_filter == 'low' %}selected{% endif %}>Low</option>
+      </select>
+      <select name="category">
+        <option value="">All Categories</option>
+        {% for cat in categories %}
+        <option value="{{ cat.id }}" {% if category_filter == cat.id|stringformat:"i" %}selected{% endif %}>{{ cat.name }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="btn-filter">Filter</button>
+      {% if search_query or status_filter or priority_filter or category_filter %}
+      <a href="{% url 'dashboard' %}" class="btn-clear">Clear</a>
+      {% endif %}
+    </form>
+
+    <!-- Tasks -->
+    <div class="tasks-header">
+      <h2>Tasks</h2>
+      <span class="task-count">{{ tasks.count }} task{{ tasks.count|pluralize }}</span>
+    </div>
+
+    <div class="tasks-list">
+      {% for task in tasks %}
+      <div class="task-card {% if task.is_pinned %}pinned{% endif %} {% if task.completed %}completed{% endif %} {% if task.is_overdue %}overdue{% endif %}">
+        <div class="task-check">
+          <a href="{% url 'toggle_task' task.id %}" class="{% if task.completed %}checked{% endif %}">
+            {% if task.completed %}✓{% endif %}
+          </a>
+        </div>
+        <div class="task-body">
+          <div class="task-title {% if task.completed %}done{% endif %}">
+            {{ task.title }}
+          </div>
+          {% if task.description %}
+          <div class="task-desc">{{ task.description }}</div>
+          {% endif %}
+          <div class="task-meta">
+            <span class="badge badge-priority-{{ task.priority }}">{{ task.get_priority_display }}</span>
+            <span class="badge badge-status-{{ task.status }}">{{ task.get_status_display }}</span>
+            {% if task.category %}
+            <span class="badge-cat" style="background:{{ task.category.color }}22; color:{{ task.category.color }}; border:1px solid {{ task.category.color }}33;">{{ task.category.name }}</span>
+            {% endif %}
+            {% if task.due_date %}
+            <span class="due-date {% if task.is_overdue %}overdue{% endif %}">
+              📅 {{ task.due_date|date:"M j, Y" }}{% if task.is_overdue %} · Overdue{% endif %}
+            </span>
+            {% endif %}
+            {% for tag in task.tag_list %}
+            <span class="tag">#{{ tag }}</span>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="task-actions">
+          <a href="{% url 'toggle_pin' task.id %}" class="btn-icon pin" title="{% if task.is_pinned %}Unpin{% else %}Pin{% endif %}">
+            {% if task.is_pinned %}📌{% else %}📍{% endif %}
+          </a>
+          <a href="{% url 'edit_task' task.id %}" class="btn-icon edit" title="Edit">✎</a>
+          <a href="{% url 'delete_task' task.id %}" class="btn-icon del" title="Delete" onclick="return confirm('Delete this task?')">✕</a>
+        </div>
+      </div>
+      {% empty %}
+      <div class="empty-state">
+        <div class="empty-icon">✦</div>
+        <h3>No tasks found</h3>
+        <p>Create your first task to get started!</p>
+      </div>
+      {% endfor %}
+    </div>
+  </main>
+</div>
+
+<!-- ── ADD TASK MODAL ── -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>✦ New Task</h2>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <form method="POST" action="{% url 'add_task' %}">
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label">Task Title *</label>
+        <input type="text" name="title" class="form-control" placeholder="What needs to be done?" required autofocus/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea name="description" class="form-control" placeholder="Add details, notes, or context..."></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Priority</label>
+          <select name="priority" class="form-control">
+            <option value="low">Low</option>
+            <option value="medium" selected>Medium</option>
+            <option value="high">High</option>
+            <option value="critical">Critical</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select name="status" class="form-control">
+            <option value="todo" selected>To Do</option>
+            <option value="in_progress">In Progress</option>
+            <option value="review">In Review</option>
+            <option value="done">Done</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select name="category" class="form-control">
+            <option value="">No Category</option>
+            {% for cat in categories %}
+            <option value="{{ cat.id }}">{{ cat.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Due Date</label>
+          <input type="date" name="due_date" class="form-control" 
+       min="{{ today|date:'Y-m-d' }}" 
+       onfocus="this.showPicker()"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tags (comma-separated)</label>
+        <input type="text" name="tags" class="form-control" placeholder="django, backend, api"/>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button type="submit" class="btn-submit">Create Task →</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ── ADD CATEGORY MODAL ── -->
+<div class="modal-overlay" id="catModal">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-header">
+      <h2>New Category</h2>
+      <button class="modal-close" onclick="closeCatModal()">✕</button>
+    </div>
+    <form method="POST" action="{% url 'add_category' %}">
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label">Name</label>
+        <input type="text" name="name" class="form-control" placeholder="Category name" required/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Color</label>
+        <div class="color-options">
+  <div class="color-opt" style="background:#7c6bff" onclick="selectColor('#7c6bff',this)"></div>
+  <div class="color-opt" style="background:#5fffd4" onclick="selectColor('#5fffd4',this)"></div>
+  <div class="color-opt" style="background:#ff6b9d" onclick="selectColor('#ff6b9d',this)"></div>
+  <div class="color-opt" style="background:#ffb83f" onclick="selectColor('#ffb83f',this)"></div>
+  <div class="color-opt" style="background:#00e5a0" onclick="selectColor('#00e5a0',this)"></div>
+  <div class="color-opt" style="background:#ff4d6d" onclick="selectColor('#ff4d6d',this)"></div>
+  <div class="color-opt" style="background:#60a5fa" onclick="selectColor('#60a5fa',this)"></div>
+  <div class="color-opt" style="background:#a78bfa" onclick="selectColor('#a78bfa',this)"></div>
+  <div class="color-opt" style="background:#34d399" onclick="selectColor('#34d399',this)"></div>
+  <div class="color-opt" style="background:#f97316" onclick="selectColor('#f97316',this)"></div>
+</div>
+<input type="hidden" name="color" id="selectedColor" value="#7c6bff"/>
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" onclick="closeCatModal()">Cancel</button>
+        <button type="submit" class="btn-submit">Create →</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function openModal() { document.getElementById('addModal').classList.add('open'); }
+  function closeModal() { document.getElementById('addModal').classList.remove('open'); }
+  function openCatModal() { document.getElementById('catModal').classList.add('open'); }
+  function closeCatModal() { document.getElementById('catModal').classList.remove('open'); }
+
+  document.getElementById('addModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+  document.getElementById('catModal').addEventListener('click', function(e) {
+    if (e.target === this) closeCatModal();
+  });
+
+  function selectColor(color, el) {
+    document.querySelectorAll('.color-opt').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById('selectedColor').value = color;
+  }
+
+  // Auto-dismiss flash messages
+  setTimeout(() => {
+    document.querySelectorAll('.flash').forEach(el => el.remove());
+  }, 4000);
+</script>
+</body>
+</html>
