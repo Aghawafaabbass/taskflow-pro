@@ -24,9 +24,8 @@
 
 ---
 
-## 🚀 Live Demo
-
-> Deploying on Railway.app — link coming soon
+### 🚀 Live Demo
+👉 https://aghawafaabbas.pythonanywhere.com/
 
 ---
 
