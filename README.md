@@ -4,9 +4,15 @@
 ![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat&logo=python&logoColor=white)
 ![Django](https://img.shields.io/badge/Django-4.x-092E20?style=flat&logo=django&logoColor=white)
 ![SQLite](https://img.shields.io/badge/Database-SQLite-003B57?style=flat&logo=sqlite&logoColor=white)
-![GitHub](https://img.shields.io/badge/GitHub-Aghawafaabbass-181717?style=flat&logo=github&logoColor=white)
+![Live](https://img.shields.io/badge/Live-PythonAnywhere-green?style=flat)
 
-> A full-featured, production-ready task management web application built with Django — designed to demonstrate real-world **Full Stack Development** skills for professional job applications.
+> A full-featured, production-grade task management system built with Django — demonstrating real-world Full Stack Development patterns including multi-user authentication, relational data modelling, dynamic filtering, and a polished responsive UI.
+
+---
+
+## 🚀 Live Demo
+
+👉 **[https://aghawafaabbas.pythonanywhere.com](https://aghawafaabbas.pythonanywhere.com)**
 
 ---
 
@@ -24,8 +30,17 @@
 
 ---
 
-### 🚀 Live Demo
-👉 https://aghawafaabbas.pythonanywhere.com/
+## 🏭 Real-World Use Cases
+
+This system reflects patterns used in production environments across multiple industries:
+
+- **Software Houses** — Internal sprint and task tracking for development teams
+- **Project Management** — Assign, track and close tasks across team members
+- **EdTech Platforms** — Student assignment and course task management
+- **Healthcare** — Clinical task assignment and follow-up tracking
+- **Startups** — Lightweight Jira/Trello alternative for early-stage teams
+- **Freelancers & Consultants** — Client deliverable and deadline management
+- **Enterprise** — Department-level task delegation and progress monitoring
 
 ---
 
@@ -36,12 +51,12 @@
 - 🎯 **4 Priority Levels** — Low, Medium, High, Critical
 - 📊 **4 Status Types** — To Do, In Progress, In Review, Done
 - 🏷️ **Custom Categories** — Color-coded per user
-- 📅 **Due Dates** — With overdue detection
+- 📅 **Due Dates** — With automatic overdue detection
 - 🔖 **Tagging System** — Comma-separated tags
-- 📌 **Pin Tasks** — Important tasks stay on top
+- 📌 **Pin Tasks** — Important tasks pinned to top
 - 🔍 **Search & Filter** — Real-time multi-filter system
 - 📈 **Stats Dashboard** — Completion rate, overdue count
-- ⚙️ **Django Admin** — Fully configured
+- ⚙️ **Django Admin** — Fully configured with search and filter
 - 📱 **Responsive UI** — Works on all devices and browsers
 
 ---
@@ -53,33 +68,33 @@
 | Backend | Python 3.10+ / Django 4.x |
 | Database | SQLite (dev) / PostgreSQL (prod) |
 | Frontend | HTML5, CSS3, Vanilla JavaScript |
-| Fonts | Google Fonts (Syne + DM Sans) |
+| Fonts | Google Fonts — Syne + DM Sans |
 | Auth | Django contrib.auth |
 | Admin | Django Admin (customized) |
 | Version Control | Git + GitHub |
-| Deployment | Gunicorn + Nginx (production ready) |
+| Deployment | PythonAnywhere |
 
 ---
 
 ## 🗄️ 1. Entity Relationship Diagram (ERD)
 
 ```
-┌──────────────┐       ┌──────────────────┐       ┌─────────────────────┐
-│     USER     │       │    CATEGORY      │       │        TASK         │
-│──────────────│       │──────────────────│       │─────────────────────│
-│ id (PK)      │◄──1───│ id (PK)          │       │ id (PK)             │
-│ username     │       │ name             │◄──1───│ title               │
-│ email        │       │ color (#hex)     │   N   │ description         │
-│ password     │       │ user_id (FK)     │       │ user_id (FK)        │
-│ is_staff     │       │ created_at       │       │ category_id (FK)    │
-└──────┬───────┘       └──────────────────┘       │ priority            │
-       │ 1                                         │ status              │
-       │ N                                         │ due_date            │
-       └───────────────────────────────────────────│ completed           │
-                                                   │ is_pinned           │
-                                                   │ tags                │
-                                                   │ created_at          │
-                                                   └─────────────────────┘
+┌────────────────┐      ┌──────────────────┐      ┌──────────────────────┐
+│      USER      │      │    CATEGORY      │      │        TASK          │
+│────────────────│      │──────────────────│      │──────────────────────│
+│ id (PK)        │◄─1───│ id (PK)          │      │ id (PK)              │
+│ username       │      │ name             │◄─1───│ title                │
+│ email          │      │ color (#hex)     │  N   │ description          │
+│ password       │      │ user_id (FK)     │      │ user_id (FK)         │
+│ is_staff       │      │ created_at       │      │ category_id (FK)     │
+└───────┬────────┘      └──────────────────┘      │ priority             │
+        │ 1                                        │ status               │
+        │ N                                        │ due_date             │
+        └──────────────────────────────────────────│ completed            │
+                                                   │ is_pinned            │
+                                                   │ tags                 │
+                                                   │ created_at           │
+                                                   └──────────────────────┘
 ```
 
 ---
@@ -101,7 +116,7 @@ Browser          URL Router       Middleware        View           Database
    │                 │               │──CSRF check───►               │
    │                 │               │               │──Task.create()──►
    │                 │               │               │◄──saved─────────│
-   │◄──────────────── 302 redirect to /dashboard ────│                │
+   │◄──────────────── 302 redirect ──────────────────│                │
 ```
 
 ---
@@ -112,18 +127,8 @@ Browser          URL Router       Middleware        View           Database
 ┌──────────────────────────────────────────────────────┐
 │                   PRODUCTION                          │
 │                                                       │
-│  Internet                                             │
-│     │                                                 │
-│     ▼                                                 │
-│  ┌──────────┐   ┌──────────┐   ┌──────────────────┐  │
-│  │  NGINX   │──►│GUNICORN  │──►│   DJANGO APP     │  │
-│  │Port 80   │   │Workers   │   │Views·Models·Auth │  │
-│  │SSL/TLS   │   │WSGI      │   └────────┬─────────┘  │
-│  └──────────┘   └──────────┘            │             │
-│                                         ▼             │
-│                                  ┌─────────────┐      │
-│                                  │ PostgreSQL  │      │
-│                                  └─────────────┘      │
+│  Browser ──► PythonAnywhere ──► Django App ──► SQLite │
+│              (WSGI Server)      Views/Models          │
 └──────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────┐
@@ -138,9 +143,6 @@ Browser          URL Router       Middleware        View           Database
 ## 📊 4. Task State Machine
 
 ```
-                    Priority (independent):
-         [Low] ──► [Medium] ──► [High] ──► [Critical]
-
   ┌─────────┐  Start   ┌─────────────┐  Review  ┌───────────┐
   │  To Do  │─────────►│ In Progress │─────────►│ In Review │
   └────▲────┘          └─────────────┘          └─────┬─────┘
@@ -149,7 +151,7 @@ Browser          URL Router       Middleware        View           Database
        │                                         ┌─────────┐
        └─────────────────────────────────────────│  Done   │
                                                  └─────────┘
-              ↑ Checkbox toggle from ANY state → Done ↑
+         Checkbox toggle: any state → Done instantly
 ```
 
 ---
@@ -157,18 +159,15 @@ Browser          URL Router       Middleware        View           Database
 ## ⚡ 5. URL & API Flow
 
 ```
-FRONTEND (HTML)             BACKEND (Django Views)
-                            
 GET  /                  ──► login_view()
 GET  /register/         ──► register_view()
 GET  /dashboard/        ──► dashboard()  → filters, stats, render
 POST /task/add/         ──► add_task()   → Task.create() → redirect
-GET  /task/edit/<id>/   ──► edit_task()  → Task.get() → render form
+GET  /task/edit/<id>/   ──► edit_task()  → render form
 POST /task/edit/<id>/   ──► edit_task()  → task.save() → redirect
 GET  /task/delete/<id>/ ──► delete_task()→ task.delete() → redirect
 GET  /task/toggle/<id>/ ──► toggle_task()→ flip completed → redirect
 GET  /task/pin/<id>/    ──► toggle_pin() → flip is_pinned → redirect
-POST /category/add/     ──► add_category()→ Category.create() → redirect
 GET  /admin/            ──► Django Admin (superuser only)
 ```
 
@@ -210,6 +209,8 @@ taskflow-pro/
 ├── manage.py
 ├── requirements.txt
 ├── README.md
+├── docs/
+│   └── TaskFlow_Pro_Complete_Guide.docx
 ├── taskflow_pro/
 │   ├── settings.py
 │   ├── urls.py
@@ -238,18 +239,18 @@ taskflow-pro/
 - [ ] Drag-and-drop Kanban board
 - [ ] PostgreSQL for production
 - [ ] Docker containerization
-- [ ] Deploy on Railway.app
 
 ---
 
 ## 📄 License
 
-MIT License — free to use for learning and portfolio purposes.
+MIT License
 
 ---
 
 <div align="center">
 <strong>TaskFlow Pro</strong> — Built with Django<br/>
 <em>Full Stack Developer · Agha Wafa Abbas</em><br/>
-<a href="https://github.com/Aghawafaabbass">github.com/Aghawafaabbass</a>
+<a href="https://aghawafaabbas.pythonanywhere.com">Live Demo</a> · 
+<a href="https://github.com/Aghawafaabbass">GitHub</a>
 </div>
